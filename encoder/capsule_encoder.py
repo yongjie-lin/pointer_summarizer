@@ -70,7 +70,7 @@ def test():
     seq_len = 100
     batch_size = 10
     encoder = CapsuleEncoder()
-    x = torch.zeros([seq_len, batch_size])
+    x = torch.zeros([seq_len, batch_size]).long()
     y = encoder(x)
 
 
