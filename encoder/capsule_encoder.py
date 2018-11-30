@@ -50,7 +50,8 @@ class CapsuleEncoder(nn.Module):
 
         # Here, num_route_nodes gives the length of the vote vectors.
         self.secondary_capsules = CapsuleLayer(num_capsules=secondary_num_capsules,
-                                               num_route_nodes=primary_capsule_dim * 6 * 6, # TODO: Where do this magic numbers come from?
+                                               # TODO: Where does magic 6 * 6 come from?
+                                               num_route_nodes=primary_capsule_dim * 6 * 6,
                                                in_channels=primary_num_capsules,
                                                out_channels=primary_capsule_dim,
                                                kernel_size=secondary_kernel_size,
@@ -63,3 +64,16 @@ class CapsuleEncoder(nn.Module):
         x = self.primary_capsules(x)
         x = self.secondary_capsules(x)
         return x
+
+
+def test():
+    seq_len = 100
+    batch_size = 10
+    encoder = CapsuleEncoder()
+    x = torch.zeros([seq_len, batch_size])
+    y = encoder(x)
+
+
+if __name__ == "__main__":
+    test()
+
