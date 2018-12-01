@@ -22,9 +22,9 @@ def capsule_net(X,
                 feature_extractor="lstm",
                 input_dim=300,
                 feature_dim=32,
-                caps1_dim=16,
-                caps2_dim=16,
-                out_dim=16):
+                pose_shape=16,
+                num_prim_caps=16,
+                num_conv_caps1=16):
     """Capsule network with either an LSTM or ConvNet feature extractor.
 
     Args:
@@ -39,10 +39,9 @@ def capsule_net(X,
         Tensor of poses.
         Tensor of activation values.
     """
-
     with tf.variable_scope("capsule_net"):
 
-        # Extract features with either an LSTM or 
+        # Extract features with either an LSTM or ConvNet.
         if feature_extractor == "lstm":
             nets = LSTM(feature_dim, return_sequences=True, unroll=True)(X)
             nets = tf.expand_dims(nets, 2)
@@ -53,41 +52,32 @@ def capsule_net(X,
                     add_bias=True, activation_fn=tf.nn.relu, name='conv'
                 )
 
-        tf.logging.info("feature tensor:", nets.shape)
         print("feature tensor:", nets.shape)
         # nets.shape: (10, ?, 1, 32)
 
-        nets = capsules_init(nets, shape=[1, 1, feature_dim, caps1_dim], strides=[1, 1, 1, 1], 
-                             padding='VALID', pose_shape=16, add_bias=True, name='primary')
-        print("primary tensors:", nets[0].shape, nets[1].shape)                     
-        nets = capsule_conv_layer(nets, shape=[3, 1, caps1_dim, caps2_dim], strides=[1, 1, 1, 1], iterations=3, name='caps1')
-        print("conv1 tensors:", nets[0].shape, nets[1].shape)
+        nets = capsules_init(nets, shape=[1, 1, feature_dim, num_prim_caps], strides=[1, 1, 1, 1], 
+                             padding='VALID', pose_shape=pose_shape, add_bias=True, name='prim-caps')
+        print("primary-caps tensors:", nets[0].shape, nets[1].shape)
+
+        nets = capsule_conv_layer(nets, shape=[3, 1, num_prim_caps, num_conv_caps1], strides=[1, 1, 1, 1], iterations=3, name='conv-caps1')
+        print("conv-caps1 tensors:", nets[0].shape, nets[1].shape)
+
         # nets = capsule_conv_layer(nets, shape=[3, 1, caps2_dim, out_dim], strides=[1, 1, 1, 1], iterations=3, name='caps1')
         # print("conv2 tensors:", nets[0].shape, nets[1].shape)
-        return nets
 
-
-def capsule_model_A(X):
-    """Model taking from paper."""
-    with tf.variable_scope('capsule_'+str(3)):
-        print("pre conv", X.shape)
-        
-        print("after conv", nets.shape)
-        # nets.shape: (10, 49, 1, 32)
-        tf.logging.info('output shape: {}'.format(nets.get_shape()))
-        nets = capsules_init(nets, shape=[1, 1, 32, 16], strides=[1, 1, 1, 1], 
-                             padding='VALID', pose_shape=16, add_bias=True, name='primary')                        
-        nets = capsule_conv_layer(nets, shape=[3, 1, 16, 16], strides=[1, 1, 1, 1], iterations=3, name='conv2')
-        return nets
+        # Remove the extra dimension in the tensors.
+        poses, activations = nets
+        return tf.squeeze(poses), tf.squeeze(activations)
 
 
 def test():
     seq_len = 100
     batch_size = 10
     embed_size = 300
+    feature_extractor = "lstm"
 
     X = tf.zeros([batch_size, seq_len, embed_size])
-    nets = capsule_net(X, "conv")
+    nets = capsule_net(X, feature_extractor)
     print("output tensors:", nets[0].shape, nets[1].shape)
 
 
