@@ -70,6 +70,7 @@ def capsule_encoder(X,
         print("conv-caps1 tensors:", nets[0].shape, nets[1].shape)
 
         # Apply the second convolutional layer if it is not disabled.
+        # TODO: Still don't really understand what the first two args of shape control.
         if num_conv_caps2 != -1:
             nets = capsule_conv_layer(nets,
                                       shape=[2, 1, num_conv_caps1, num_conv_caps2],
