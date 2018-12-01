@@ -15,7 +15,6 @@ from keras.layers import Embedding, LSTM
 from keras import backend as K
 from utils import _conv2d_wrapper
 from layer import capsules_init, capsule_flatten, capsule_conv_layer, capsule_fc_layer
-# import tensorflow.contrib.slim as slim
 
 
 def capsule_net(X,
