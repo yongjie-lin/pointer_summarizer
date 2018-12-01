@@ -31,9 +31,9 @@ def capsule_net(X,
         feature_extractor: Either "lstm" or "conv".
         input_dim: Length of input embeddings.
         feature_dim: Length of feature representation.
-        caps1_dim: Dimension of capsules in first conv-caps layer.
-        caps2_dim: Dimension of capsules in second conv-caps layer.
-        out_dim: Dimensionality of capsules in output.
+        pose_shape: The length of capsules.
+        num_prim_caps: The number of capsules in the primary capsule layer.
+        num_conv_caps1: The number of capsules in the first convolutional capsule layer.
 
     Returns:
         Tensor of poses.
