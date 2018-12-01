@@ -22,18 +22,22 @@ def capsule_net(X,
                 feature_extractor="lstm",
                 input_dim=300,
                 feature_dim=32,
-                pose_shape=16,
                 num_prim_caps=16,
-                num_conv_caps1=16):
+                num_conv_caps1=16,
+                num_conv_caps2=16,
+                pose_shape=16,
+                routing_iterations=3):
     """Capsule network with either an LSTM or ConvNet feature extractor.
 
     Args:
         feature_extractor: Either "lstm" or "conv".
         input_dim: Length of input embeddings.
         feature_dim: Length of feature representation.
-        pose_shape: The length of capsules.
         num_prim_caps: The number of capsules in the primary capsule layer.
         num_conv_caps1: The number of capsules in the first convolutional capsule layer.
+        num_conv_caps2: The number of capsules in the second convolutional capsule layer.
+        pose_shape: The length of capsules.
+        routing_iterations: The number of iterations for dynamic routing.
 
     Returns:
         Tensor of poses.
@@ -51,30 +55,40 @@ def capsule_net(X,
                     X, shape=[3, input_dim, 1, feature_dim], strides=[1, 2, 1, 1], padding='VALID', 
                     add_bias=True, activation_fn=tf.nn.relu, name='conv'
                 )
-
         print("feature tensor:", nets.shape)
-        # nets.shape: (10, ?, 1, 32)
 
+        # Convert the features at each time step to capsules.
         nets = capsules_init(nets, shape=[1, 1, feature_dim, num_prim_caps], strides=[1, 1, 1, 1], 
                              padding='VALID', pose_shape=pose_shape, add_bias=True, name='prim-caps')
         print("primary-caps tensors:", nets[0].shape, nets[1].shape)
 
-        nets = capsule_conv_layer(nets, shape=[3, 1, num_prim_caps, num_conv_caps1], strides=[1, 1, 1, 1], iterations=3, name='conv-caps1')
+        # Apply the first convolutional layer.
+        nets = capsule_conv_layer(nets,
+                                  shape=[3, 1, num_prim_caps, num_conv_caps1],
+                                  strides=[1, 1, 1, 1],
+                                  iterations=routing_iterations,
+                                  name='conv-caps1')
         print("conv-caps1 tensors:", nets[0].shape, nets[1].shape)
 
-        # nets = capsule_conv_layer(nets, shape=[3, 1, caps2_dim, out_dim], strides=[1, 1, 1, 1], iterations=3, name='caps1')
-        # print("conv2 tensors:", nets[0].shape, nets[1].shape)
+        # Apply the second convolutional layer.
+        nets = capsule_conv_layer(nets,
+                                  shape=[1, 1, num_conv_caps1, num_conv_caps2],
+                                  strides=[1, 1, 1, 1],
+                                  iterations=routing_iterations,
+                                  name='conv-caps2')
+        print("conv-conv2 tensors:", nets[0].shape, nets[1].shape)
 
         # Remove the extra dimension in the tensors.
         poses, activations = nets
         return tf.squeeze(poses), tf.squeeze(activations)
 
 
-def test():
+def test_graph():
+    """Build a graph for dummy data."""
     seq_len = 100
     batch_size = 10
     embed_size = 300
-    feature_extractor = "lstm"
+    feature_extractor = "conv"
 
     X = tf.zeros([batch_size, seq_len, embed_size])
     nets = capsule_net(X, feature_extractor)
@@ -82,4 +96,4 @@ def test():
 
 
 if __name__ == "__main__":
-    test()
+    test_graph()
