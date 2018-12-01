@@ -70,13 +70,14 @@ def capsule_net(X,
                                   name='conv-caps1')
         print("conv-caps1 tensors:", nets[0].shape, nets[1].shape)
 
-        # Apply the second convolutional layer.
-        nets = capsule_conv_layer(nets,
-                                  shape=[1, 1, num_conv_caps1, num_conv_caps2],
-                                  strides=[1, 1, 1, 1],
-                                  iterations=routing_iterations,
-                                  name='conv-caps2')
-        print("conv-conv2 tensors:", nets[0].shape, nets[1].shape)
+        # Apply the second convolutional layer if it is not disabled.
+        if num_conv_caps2 != -1:
+            nets = capsule_conv_layer(nets,
+                                      shape=[1, 1, num_conv_caps1, num_conv_caps2],
+                                      strides=[1, 1, 1, 1],
+                                      iterations=routing_iterations,
+                                      name='conv-caps2')
+            print("conv-conv2 tensors:", nets[0].shape, nets[1].shape)
 
         # Remove the extra dimension in the tensors.
         poses, activations = nets
