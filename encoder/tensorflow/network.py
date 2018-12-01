@@ -72,7 +72,7 @@ def capsule_encoder(X,
         # Apply the second convolutional layer if it is not disabled.
         if num_conv_caps2 != -1:
             nets = capsule_conv_layer(nets,
-                                      shape=[1, 1, num_conv_caps1, num_conv_caps2],
+                                      shape=[2, 1, num_conv_caps1, num_conv_caps2],
                                       strides=[1, 1, 1, 1],
                                       iterations=routing_iterations,
                                       name='conv-caps2')
