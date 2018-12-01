@@ -17,16 +17,16 @@ from utils import _conv2d_wrapper
 from layer import capsules_init, capsule_flatten, capsule_conv_layer, capsule_fc_layer
 
 
-def capsule_net(X,
-                feature_extractor="lstm",
-                input_dim=300,
-                feature_dim=32,
-                num_prim_caps=16,
-                num_conv_caps1=16,
-                num_conv_caps2=16,
-                pose_shape=16,
-                routing_iterations=3):
-    """Capsule network with either an LSTM or ConvNet feature extractor.
+def capsule_encoder(X,
+                    feature_extractor="lstm",
+                    input_dim=300,
+                    feature_dim=32,
+                    num_prim_caps=16,
+                    num_conv_caps1=16,
+                    num_conv_caps2=16,
+                    pose_shape=16,
+                    routing_iterations=3):
+    """Capsule encoder with either an LSTM or ConvNet feature extraction layer.
 
     Args:
         feature_extractor: Either "lstm" or "conv".
@@ -91,7 +91,7 @@ def test_graph():
     feature_extractor = "conv"
 
     X = tf.zeros([batch_size, seq_len, embed_size])
-    nets = capsule_net(X, feature_extractor)
+    nets = capsule_encoder(X, feature_extractor)
     print("output tensors:", nets[0].shape, nets[1].shape)
 
 
